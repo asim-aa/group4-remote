@@ -1,3 +1,26 @@
+//Yangjian Q1 Q2
+uint8_t is_ascii(char string[]) {
+        for (int i = 0; string[i] != '\0'; i++) {
+        if ((unsigned char)string[i] > 127) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int32_t capitalize_ascii(char str[]) {
+        int32_t count = 0;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] >= 'a' && str[i] <= 'z') {
+            str[i] -= 32;  
+            count++;
+        }
+    }
+    return count;
+}
+
+//end
+
 // Asim Ahmed Q7 Q8 Q9
 static int decode_utf8(const char *s, uint32_t *out_cp) {
     const unsigned char *u = (const unsigned char*)s;
