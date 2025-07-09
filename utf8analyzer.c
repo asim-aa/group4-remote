@@ -21,6 +21,85 @@ int32_t capitalize_ascii(char str[]) {
 
 //end
 
+// Nirel Indurkar Q5
+int32_t codepoint_at(char str[], int32_t byte_index) {
+    // TODO: Implement this function
+    unsigned char *ptr = (unsigned char *)&str[byte_index];
+    
+    if ((ptr[0] & 0xC0) == 0x80) {
+        return -1; // Continuation byte
+    }
+
+
+    if ((ptr[0] & 0x80) == 0x00) {
+        return ptr[0];
+    } else if ((ptr[0] & 0xE0) == 0xC0) {
+        return ((ptr[0] & 0x1F) << 6) |
+               (ptr[1] & 0x3F);
+    } else if ((ptr[0] & 0xF0) == 0xE0) {
+        return ((ptr[0] & 0x0F) << 12) |
+               ((ptr[1] & 0x3F) << 6) |
+               (ptr[2] & 0x3F);
+    } else if ((ptr[0] & 0xF8) == 0xF0) {
+        return ((ptr[0] & 0x07) << 18) |
+               ((ptr[1] & 0x3F) << 12) |
+               ((ptr[2] & 0x3F) << 6) |
+               (ptr[3] & 0x3F);
+    }
+}
+
+int main() {
+    char input[2048];
+    int32_t byte_index;
+    
+    // Read lines of input until EOF
+    while (scanf("%[^\n]%*c", input) == 1) {
+        // Get the byte index after the space
+        char* space = strrchr(input, ' ');
+        if (space != NULL) {
+            *space = '\0';  // Split string at space
+            byte_index = atoi(space + 1);
+            
+            // Call function and print result
+            printf("%d\n", codepoint_at(input, byte_index));
+        }
+    }
+    
+    return 0;
+}
+
+// Nirel Indurkar Q6
+uint8_t codepoint_size(char string[]) {
+    if(string[0] == '\0') {
+        return 0;
+    }
+    unsigned char first = (unsigned char)string[0];
+    if ((first & 0x80) == 0x00) {
+        return 1;
+    } else if ((first & 0xE0) == 0xC0) {
+        return 2;
+    } else if ((first & 0xF0) == 0xE0) {
+        return 3;
+    } else if ((first & 0xF8) == 0xF0) {
+        return 4;
+    } else {
+        return -1;
+    }
+
+}
+int main(int argc, char** argv) {
+        char buffer[100];
+        uint8_t result;
+        while(1) {
+                char* maybe_eof = fgets(buffer, 99, stdin);
+                if(maybe_eof == NULL) { break; }
+                result = codepoint_size(buffer);
+                printf("%d\n", result);
+        }
+}
+
+//END OF CODE
+
 // Asim Ahmed Q7 Q8 Q9
 static int decode_utf8(const char *s, uint32_t *out_cp) {
     const unsigned char *u = (const unsigned char*)s;
