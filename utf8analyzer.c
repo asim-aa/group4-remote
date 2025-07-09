@@ -1,6 +1,16 @@
-//Yangjian Q1 Q2
+// utf8analyzer.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <ctype.h>
+
+// Yangjian Q1 Q2
+// Q1: Return 1 if all bytes in `string` are ASCII (≤127), else 0.
+// Q2: Capitalize [a–z] in `str` in‐place and return count of letters changed.
 uint8_t is_ascii(char string[]) {
-        for (int i = 0; string[i] != '\0'; i++) {
+    for (int i = 0; string[i] != '\0'; i++) {
         if ((unsigned char)string[i] > 127) {
             return 0;
         }
@@ -8,317 +18,187 @@ uint8_t is_ascii(char string[]) {
     return 1;
 }
 
-
-int main(int argc, char** argv) {
-        char buffer[100];
-        uint8_t result;
-        while(1) {
-                char* maybe_eof = fgets(buffer, 99, stdin);
-                if(maybe_eof == NULL) { break; }
-                result = is_ascii(buffer);
-                printf("%d\n", result);
-        }
-}
-
 int32_t capitalize_ascii(char str[]) {
-        int32_t count = 0;
+    int32_t count = 0;
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] >= 'a' && str[i] <= 'z') {
-            str[i] -= 32;  // Capitalize by subtracting ASCII offset
+            str[i] -= 32;  // ASCII offset
             count++;
         }
     }
     return count;
 }
+// End Yangjian Q1 Q2
 
 
-int main(int argc, char** argv) {
-        char buffer[100];
-        int32_t num_updated;
-        while(1) {
-                char* maybe_eof = fgets(buffer, 99, stdin);
-                if(maybe_eof == NULL) { break; }
-                num_updated = capitalize_ascii(buffer);
-                printf("%d %s", num_updated, buffer);
-        }
-}
-//end
-
-//Lucas Nguyen Q3 & Q4
+// Lucas Nguyen Q3 Q4
+// Q3: Convert a binary string in `str` (e.g. "1011") to decimal and print it.
+// Q4: Return number of UTF-8 codepoints in `str`, or –1 on error.
 void bin_to_dec(char str[]) {
-        // Implement bin_to_dec in the body of this function!
-	unsigned int result = 0;
-	for (int i = 0; str[i] != '\0'; i++) {
-		result <<= 1;
-		if (str[i] == '1') {
-			result |= 1;
-		}
-	}
-	printf("%u\n", result);
-}
-
-
-int main(int argc, char** argv) {
-        char buffer[100];
-        while(1) {
-                char* maybe_eof = fgets(buffer, sizeof(buffer), stdin);
-                if(maybe_eof == NULL) { break; }
-                
-                // Remove newline if present
-                size_t len = strlen(buffer);
-                        if (len > 0 && buffer[len-1] == '\n') {
-                        buffer[len-1] = '\0';
-                }
-
-                bin_to_dec(buffer);
-        }
+    unsigned int result = 0;
+    for (int i = 0; str[i] != '\0'; i++) {
+        result <<= 1;
+        if (str[i] == '1') result |= 1;
+    }
+    printf("%u\n", result);
 }
 
 int32_t utf8_strlen(char str[]) {
-    // TODO: Implement this function
     int32_t count = 0;
-    unsigned char* ptr = (unsigned char*)str;
-
-    while (*ptr != '\0') {
-        if ((*ptr & 0b10000000) == 0) {
-            
-            ptr += 1;
-        } else if ((*ptr & 0b11100000) == 0b11000000) {
-            
-            ptr += 2;
-        } else if ((*ptr & 0b11110000) == 0b11100000) {
-            
-            ptr += 3;
-        } else if ((*ptr & 0b11111000) == 0b11110000) {
-            
-            ptr += 4;
-        } else {
-            
-            return -1;
-        }
+    unsigned char *p = (unsigned char*)str;
+    while (*p) {
+        if      ((*p & 0x80) == 0x00) p += 1;
+        else if ((*p & 0xE0) == 0xC0) p += 2;
+        else if ((*p & 0xF0) == 0xE0) p += 3;
+        else if ((*p & 0xF8) == 0xF0) p += 4;
+        else return -1;
         count++;
     }
-
     return count;
 }
+// End Lucas Nguyen Q3 Q4
 
-int main() {
-    char input[MAX_LENGTH];  // Buffer for input string (max 2048 bytes)
-    
-    while (fgets(input, sizeof(input), stdin)) {
-        // Remove trailing newline if present
-        char* newline = strchr(input, '\n');
-        if (newline) *newline = '\0';
-        
-        // Get and print the string length
-        int32_t result = utf8_strlen(input);
-        printf("%d\n", result);
-    }
-    
-    return 0;
-}
 
-//Lucas End 
-
-// Nirel Indurkar Q5
+// Nirel Indurkar Q5 Q6
+// Q5: Return the Unicode codepoint beginning at byte_index, or –1 on continuation/error.
+// Q6: Return the byte‐length of the UTF-8 codepoint at str[0], or 0 if empty.
 int32_t codepoint_at(char str[], int32_t byte_index) {
-    // TODO: Implement this function
-    unsigned char *ptr = (unsigned char *)&str[byte_index];
-    
-    if ((ptr[0] & 0xC0) == 0x80) {
-        return -1; // Continuation byte
-    }
-
-
-    if ((ptr[0] & 0x80) == 0x00) {
-        return ptr[0];
-    } else if ((ptr[0] & 0xE0) == 0xC0) {
-        return ((ptr[0] & 0x1F) << 6) |
-               (ptr[1] & 0x3F);
-    } else if ((ptr[0] & 0xF0) == 0xE0) {
-        return ((ptr[0] & 0x0F) << 12) |
-               ((ptr[1] & 0x3F) << 6) |
-               (ptr[2] & 0x3F);
-    } else if ((ptr[0] & 0xF8) == 0xF0) {
-        return ((ptr[0] & 0x07) << 18) |
-               ((ptr[1] & 0x3F) << 12) |
-               ((ptr[2] & 0x3F) << 6) |
-               (ptr[3] & 0x3F);
-    }
+    unsigned char *p = (unsigned char*)str + byte_index;
+    if ((p[0] & 0xC0) == 0x80) return -1;  // continuation byte
+    if ((p[0] & 0x80) == 0x00)       return  p[0];
+    else if ((p[0] & 0xE0) == 0xC0)  return ((p[0]&0x1F)<<6)  | (p[1]&0x3F);
+    else if ((p[0] & 0xF0) == 0xE0)  return ((p[0]&0x0F)<<12) | ((p[1]&0x3F)<<6) | (p[2]&0x3F);
+    else if ((p[0] & 0xF8) == 0xF0)  return ((p[0]&0x07)<<18) | ((p[1]&0x3F)<<12) | ((p[2]&0x3F)<<6) | (p[3]&0x3F);
+    return -1;
 }
 
-int main() {
-    char input[2048];
-    int32_t byte_index;
-    
-    // Read lines of input until EOF
-    while (scanf("%[^\n]%*c", input) == 1) {
-        // Get the byte index after the space
-        char* space = strrchr(input, ' ');
-        if (space != NULL) {
-            *space = '\0';  // Split string at space
-            byte_index = atoi(space + 1);
-            
-            // Call function and print result
-            printf("%d\n", codepoint_at(input, byte_index));
-        }
-    }
-    
+uint8_t codepoint_size(char string[]) {
+    if (!string[0]) return 0;
+    unsigned char c = (unsigned char)string[0];
+    if      ((c & 0x80) == 0x00) return 1;
+    else if ((c & 0xE0) == 0xC0) return 2;
+    else if ((c & 0xF0) == 0xE0) return 3;
+    else if ((c & 0xF8) == 0xF0) return 4;
     return 0;
 }
+// End Nirel Indurkar Q5 Q6
 
-// Nirel Indurkar Q6
-uint8_t codepoint_size(char string[]) {
-    if(string[0] == '\0') {
-        return 0;
-    }
-    unsigned char first = (unsigned char)string[0];
-    if ((first & 0x80) == 0x00) {
-        return 1;
-    } else if ((first & 0xE0) == 0xC0) {
-        return 2;
-    } else if ((first & 0xF0) == 0xE0) {
-        return 3;
-    } else if ((first & 0xF8) == 0xF0) {
-        return 4;
-    } else {
-        return -1;
-    }
-
-}
-int main(int argc, char** argv) {
-        char buffer[100];
-        uint8_t result;
-        while(1) {
-                char* maybe_eof = fgets(buffer, 99, stdin);
-                if(maybe_eof == NULL) { break; }
-                result = codepoint_size(buffer);
-                printf("%d\n", result);
-        }
-}
-
-//END OF CODE
 
 // Asim Ahmed Q7 Q8 Q9
+// Q7 helper: Decode one UTF-8 codepoint from s into *out_cp, return byte‐length.
 static int decode_utf8(const char *s, uint32_t *out_cp) {
     const unsigned char *u = (const unsigned char*)s;
-    if      (u[0] < 0x80) {
-        *out_cp = u[0]; return 1;
-    } else if ((u[0] & 0xE0) == 0xC0) {
-        *out_cp = ((u[0]&0x1F)<<6) | (u[1]&0x3F);
-        return 2;
-    } else if ((u[0] & 0xF0) == 0xE0) {
-        *out_cp = ((u[0]&0x0F)<<12)
-                | ((u[1]&0x3F)<<6)
-                |  (u[2]&0x3F);
-        return 3;
-    } else if ((u[0] & 0xF8) == 0xF0) {
-        *out_cp = ((u[0]&0x07)<<18)
-                | ((u[1]&0x3F)<<12)
-                | ((u[2]&0x3F)<<6)
-                |  (u[3]&0x3F);
-        return 4;
-    }
-    *out_cp = 0;
-    return 1;
+    if      (u[0] < 0x80) { *out_cp = u[0]; return 1; }
+    else if ((u[0]&0xE0)==0xC0) { *out_cp = ((u[0]&0x1F)<<6)|(u[1]&0x3F); return 2; }
+    else if ((u[0]&0xF0)==0xE0) { *out_cp = ((u[0]&0x0F)<<12)|((u[1]&0x3F)<<6)|(u[2]&0x3F); return 3; }
+    else if ((u[0]&0xF8)==0xF0) { *out_cp = ((u[0]&0x07)<<18)|((u[1]&0x3F)<<12)|((u[2]&0x3F)<<6)|(u[3]&0x3F); return 4; }
+    *out_cp = 0; return 1;
 }
 
-// —— UTF-8 printer helper ——
-// Emits the UTF-8 bytes of cp via putchar.
+// Q7 helper: Print one codepoint as UTF-8 bytes.
 static void print_utf8(uint32_t cp) {
-    if (cp <= 0x7F) {
-        putchar(cp);
-    } else if (cp <= 0x7FF) {
-        putchar(0xC0 |  (cp >> 6));
-        putchar(0x80 |  (cp & 0x3F));
+    if      (cp <= 0x7F) putchar(cp);
+    else if (cp <= 0x7FF) {
+        putchar(0xC0|(cp>>6)); putchar(0x80|(cp&0x3F));
     } else if (cp <= 0xFFFF) {
-        putchar(0xE0 |  (cp >> 12));
-        putchar(0x80 | ((cp >> 6) & 0x3F));
-        putchar(0x80 |  (cp & 0x3F));
+        putchar(0xE0|(cp>>12));
+        putchar(0x80|((cp>>6)&0x3F));
+        putchar(0x80|(cp&0x3F));
     } else {
-        putchar(0xF0 |  (cp >> 18));
-        putchar(0x80 | ((cp >> 12) & 0x3F));
-        putchar(0x80 | ((cp >> 6)  & 0x3F));
-        putchar(0x80 |  (cp & 0x3F));
+        putchar(0xF0|(cp>>18));
+        putchar(0x80|((cp>>12)&0x3F));
+        putchar(0x80|((cp>>6)&0x3F));
+        putchar(0x80|(cp&0x3F));
     }
 }
 
-// —— 1. Print all animal emojis ——
-// Scans s, prints any codepoint in U+1F400–1F43F or 1F980–1F9AE.
+// Q8: Print all animal emojis in s (ranges U+1F400–1F43F, U+1F980–1F9AE).
 void print_animal_emojis(const char *s) {
-    size_t i = 0;
-    uint32_t cp;
+    size_t i = 0; uint32_t cp;
     printf("Animal emojis: ");
     while (s[i]) {
         int len = decode_utf8(s + i, &cp);
-        if ((cp >= 0x1F400 && cp <= 0x1F43F) ||
-            (cp >= 0x1F980 && cp <= 0x1F9AE)) {
-            print_utf8(cp);
-            putchar(' ');
+        if ((cp>=0x1F400&&cp<=0x1F43F)||(cp>=0x1F980&&cp<=0x1F9AE)) {
+            print_utf8(cp); putchar(' ');
         }
         i += len;
     }
     putchar('\n');
 }
 
-// —— 2. Print “codepoint at index 3 + 1” ——
-// Finds the 4th codepoint (index 3), adds 1, and prints it.
+// Q9a: Find the 4th codepoint (idx 3), add 1, and print it.
 void print_next_cp_at3(const char *s) {
-    size_t i = 0, idx = 0;
-    uint32_t cp;
+    size_t i=0, idx=0; uint32_t cp;
     while (s[i]) {
         int len = decode_utf8(s + i, &cp);
         if (idx == 3) {
-            uint32_t next = cp + 1;
-            printf("Codepoint at idx 3 + 1 = U+%04X: ", next);
-            print_utf8(next);
+            uint32_t nxt = cp + 1;
+            printf("Codepoint at idx 3 + 1 = U+%04X: ", nxt);
+            print_utf8(nxt);
             putchar('\n');
             return;
         }
-        i += len;
-        idx++;
+        i += len; idx++;
     }
     printf("No 4th codepoint to increment.\n");
 }
 
-// —— 3. Print substring of codepoints [start, end) ——
-// Walks codepoints, identifies byte range, then prints that slice.
+// Q9b: Print substring of codepoints [start,end).
 void utf8_substring(const char str[], int start, int end) {
-    int cp_index = 0, byte_index = 0;
-    int begin_byte = -1, end_byte = -1;
-    int str_len = strlen(str);
-
-    // Walk until we hit end
-    while (str[byte_index] && cp_index < end) {
-        if (cp_index == start) begin_byte = byte_index;
-
-        uint32_t cp;
-        int sz = decode_utf8(str + byte_index, &cp);
-        byte_index += sz;
-        cp_index++;
+    int cp_i=0, byte_i=0, b0=-1, b1=-1, sl=strlen(str);
+    while (str[byte_i] && cp_i<end) {
+        if (cp_i==start) b0 = byte_i;
+        uint32_t cp; int sz = decode_utf8(str+byte_i, &cp);
+        byte_i += sz; cp_i++;
     }
-    if (cp_index == start && begin_byte < 0) begin_byte = byte_index;
-    if (cp_index >= end && end_byte < 0) end_byte = byte_index;
-    if (begin_byte < 0) begin_byte = str_len;
-    if (end_byte < 0)   end_byte   = str_len;
-
-    int out_len = end_byte - begin_byte;
-    if (out_len > 0) {
-        fwrite(str + begin_byte, 1, out_len, stdout);
-    }
+    if (b0<0) b0=sl;
+    if (cp_i>=end && b1<0) b1=byte_i;
+    if (b1<0) b1=sl;
+    int out_len = b1 - b0;
+    if (out_len>0) fwrite(str+b0,1,out_len,stdout);
     putchar('\n');
 }
-
-// END OF CODE
-
-
-
+// End Asim Ahmed Q7 Q8 Q9
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        fprintf(stderr, "Usage: utf8analyzer \"<UTF-8 encoded string>\"\n");
+        fprintf(stderr, "Usage: %s \"<UTF-8 encoded string>\"\n", argv[0]);
         return 1;
     }
+    char *input = argv[1];
 
-    // implement the UTF-8 analyzer here
+    // Q1: ASCII?
+    printf("q1:%u\n", is_ascii(input));
+
+    // Q2
+    char *tmp = strdup(input);
+    int32_t caps = capitalize_ascii(tmp);
+    printf("q2:%d_%s\n", caps, tmp);
+    free(tmp);
+
+    // Q3
+    printf("q3:");
+    bin_to_dec(input);
+
+    // Q4
+    printf("q4:%d\n", utf8_strlen(input));
+
+    // Q5
+    printf("q5:%d\n", codepoint_at(input, 0));
+
+    // Q6
+    printf("q6:%u\n", codepoint_size(input));
+
+    // Q7
+    printf("q7:");
+    print_animal_emojis(input);
+
+    // Q8
+    printf("q8:");
+    print_next_cp_at3(input);
+
+    // Q9
+    printf("q9:");
+    utf8_substring(input, 0, 6);
+
+    return 0;
 }
-
