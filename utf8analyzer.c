@@ -21,6 +21,82 @@ int32_t capitalize_ascii(char str[]) {
 
 //end
 
+//Lucas Nguyen Q3 & Q4
+void bin_to_dec(char str[]) {
+        // Implement bin_to_dec in the body of this function!
+	unsigned int result = 0;
+	for (int i = 0; str[i] != '\0'; i++) {
+		result <<= 1;
+		if (str[i] == '1') {
+			result |= 1;
+		}
+	}
+	printf("%u\n", result);
+}
+
+
+int main(int argc, char** argv) {
+        char buffer[100];
+        while(1) {
+                char* maybe_eof = fgets(buffer, sizeof(buffer), stdin);
+                if(maybe_eof == NULL) { break; }
+                
+                // Remove newline if present
+                size_t len = strlen(buffer);
+                        if (len > 0 && buffer[len-1] == '\n') {
+                        buffer[len-1] = '\0';
+                }
+
+                bin_to_dec(buffer);
+        }
+}
+
+int32_t utf8_strlen(char str[]) {
+    // TODO: Implement this function
+    int32_t count = 0;
+    unsigned char* ptr = (unsigned char*)str;
+
+    while (*ptr != '\0') {
+        if ((*ptr & 0b10000000) == 0) {
+            
+            ptr += 1;
+        } else if ((*ptr & 0b11100000) == 0b11000000) {
+            
+            ptr += 2;
+        } else if ((*ptr & 0b11110000) == 0b11100000) {
+            
+            ptr += 3;
+        } else if ((*ptr & 0b11111000) == 0b11110000) {
+            
+            ptr += 4;
+        } else {
+            
+            return -1;
+        }
+        count++;
+    }
+
+    return count;
+}
+
+int main() {
+    char input[MAX_LENGTH];  // Buffer for input string (max 2048 bytes)
+    
+    while (fgets(input, sizeof(input), stdin)) {
+        // Remove trailing newline if present
+        char* newline = strchr(input, '\n');
+        if (newline) *newline = '\0';
+        
+        // Get and print the string length
+        int32_t result = utf8_strlen(input);
+        printf("%d\n", result);
+    }
+    
+    return 0;
+}
+
+//Lucas End 
+
 // Nirel Indurkar Q5
 int32_t codepoint_at(char str[], int32_t byte_index) {
     // TODO: Implement this function
