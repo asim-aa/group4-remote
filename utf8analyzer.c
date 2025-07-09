@@ -8,17 +8,40 @@ uint8_t is_ascii(char string[]) {
     return 1;
 }
 
+
+int main(int argc, char** argv) {
+        char buffer[100];
+        uint8_t result;
+        while(1) {
+                char* maybe_eof = fgets(buffer, 99, stdin);
+                if(maybe_eof == NULL) { break; }
+                result = is_ascii(buffer);
+                printf("%d\n", result);
+        }
+}
+
 int32_t capitalize_ascii(char str[]) {
         int32_t count = 0;
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] >= 'a' && str[i] <= 'z') {
-            str[i] -= 32;  
+            str[i] -= 32;  // Capitalize by subtracting ASCII offset
             count++;
         }
     }
     return count;
 }
 
+
+int main(int argc, char** argv) {
+        char buffer[100];
+        int32_t num_updated;
+        while(1) {
+                char* maybe_eof = fgets(buffer, 99, stdin);
+                if(maybe_eof == NULL) { break; }
+                num_updated = capitalize_ascii(buffer);
+                printf("%d %s", num_updated, buffer);
+        }
+}
 //end
 
 //Lucas Nguyen Q3 & Q4
